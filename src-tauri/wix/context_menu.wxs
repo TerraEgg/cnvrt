@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <RegistryKey Root="HKCU" Key="Software\Classes\*\shell\cnvrt">
+      <RegistryValue Type="string" Value="Convert with Cnvrt" />
+      <RegistryKey Key="command">
+        <RegistryValue Type="string" Value="&quot;[INSTALLFOLDER]cnvrt.exe&quot; &quot;--file&quot; &quot;%1&quot;" />
+      </RegistryKey>
+    </RegistryKey>
+  </Fragment>
+</Wix>

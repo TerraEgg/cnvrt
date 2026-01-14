@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { useConversionStore } from "./stores/conversion";
 import NotificationCenter from "./components/NotificationCenter.vue";
 
@@ -14,6 +15,33 @@ const destinationFolder = ref('');
 const keepTransparency = ref(true);
 const isImporting = ref(false);
 
+const supportedFormats = ['png', 'jpg', 'jpeg', 'jfif', 'webp', 'bmp', 'gif', 'tiff', 'tif', 'ico', 'avif', 'heic', 'heif', 'ppm', 'pgm', 'pbm', 'tga', 'dds', 'apng', 'cur', 'exr', 'svg', 'pdf', 'psd', 'psb', 'fits', 'dcm', 'pcx', 'mp4', 'm4v', 'mkv', 'mov', 'webm', 'avi', 'flv', 'mpg', 'mpeg', 'ts', 'm2ts', 'mts', 'ogv', 'ogg'];
+
+const isSupportedFormat = (ext: string): boolean => {
+  return supportedFormats.includes(ext.toLowerCase());
+};
+
+const addFileFromPath = (filePath: string) => {
+  const fileName = filePath.split(/[\\\/]/).pop() || filePath;
+  const ext = fileName.split('.').pop()?.toLowerCase() || '';
+  
+  if (!isSupportedFormat(ext)) {
+    return;
+  }
+  
+  store.addFile({
+    id: Math.random().toString(36).substring(2),
+    name: fileName,
+    path: filePath,
+    size: 0,
+    type: '',
+    extension: ext,
+    targetFormat: '',
+    file: undefined,
+    preview: '',
+  });
+};
+
 onMounted(async () => {
   try {
     const downloads = await invoke<string | null>('get_downloads_folder');
@@ -23,6 +51,24 @@ onMounted(async () => {
   } catch (error) {
     console.error('Error getting downloads folder:', error);
     destinationFolder.value = '';
+  }
+
+  await listen<string>('tauri://deep-link', (event) => {
+    const payload = event.payload;
+    const url = new URL(payload);
+    const filePath = url.searchParams.get('file');
+    if (filePath) {
+      addFileFromPath(decodeURIComponent(filePath));
+    }
+  });
+
+  try {
+    const file = await invoke<string | null>('get_initial_file');
+    if (file) {
+      addFileFromPath(file);
+    }
+  } catch (error) {
+    console.error('Error getting initial file:', error);
   }
 });
 
@@ -50,24 +96,7 @@ const pickFiles = async () => {
       isImporting.value = true;
       try {
         for (const filePath of filePaths) {
-          const fileName = filePath.split(/[\\\/]/).pop() || filePath;
-          const ext = fileName.split('.').pop()?.toLowerCase() || '';
-          
-          if (!isSupportedFormat(ext)) {
-            continue;
-          }
-          
-          store.addFile({
-            id: Math.random().toString(36).substring(2),
-            name: fileName,
-            path: filePath,
-            size: 0,
-            type: '',
-            extension: ext,
-            targetFormat: '',
-            file: undefined,
-            preview: '',
-          });
+          addFileFromPath(filePath);
         }
       } finally {
         isImporting.value = false;
@@ -119,8 +148,6 @@ const updateFormat = (ext: string, format: string) => {
     }
   }
 };
-
-const supportedFormats = ['png', 'jpg', 'jpeg', 'jfif', 'webp', 'bmp', 'gif', 'tiff', 'tif', 'ico', 'avif', 'heic', 'heif', 'ppm', 'pgm', 'pbm', 'tga', 'dds', 'apng', 'cur', 'exr', 'svg', 'pdf', 'psd', 'psb', 'fits', 'dcm', 'pcx', 'mp4', 'm4v', 'mkv', 'mov', 'webm', 'avi', 'flv', 'mpg', 'mpeg', 'ts', 'm2ts', 'mts', 'ogv', 'ogg'];
 
 const allImageOutputFormats = ['png', 'jpg', 'jpeg', 'bmp', 'webp', 'gif', 'tiff', 'ico', 'ppm', 'pgm', 'pbm'];
 
@@ -183,10 +210,6 @@ const getCompatibleFormats = (format: string): string[] => {
 const isSupportedFile = (file: File): boolean => {
   const ext = file.name.split('.').pop()?.toLowerCase() || '';
   return supportedFormats.includes(ext) || file.type.startsWith('image/') || file.type.startsWith('video/') || file.type.includes('pdf') || file.type.includes('svg');
-};
-
-const isSupportedFormat = (ext: string): boolean => {
-  return supportedFormats.includes(ext.toLowerCase());
 };
 
 const filesByType = computed(() => {
