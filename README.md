@@ -11,12 +11,10 @@ A lightweight, fast desktop application for converting image and video files acr
 ### Video Formats
 **Input & Output:** MP4, MKV, MOV, WEBM, AVI, FLV, MPG, MPEG, TS, M2TS, MTS, OGV, OGG
 
-## Development Requirements
-
-- Windows 10+ / macOS / Linux
-- Rust 1.70+
-- Node.js 16+
-- pnpm
+## Simple install
+1. Go to [releases](https://github.com/TerraEgg/cnvrt/releases)
+2. Download the latest release
+3. Run it
 
 ## Setup & Development
 
@@ -41,11 +39,6 @@ FFmpeg is required for video conversion and is **automatically downloaded on fir
 
 1. Application detects missing FFmpeg on first video conversion
 2. Automatically downloads from [FFbinaries GitHub](https://github.com/ffbinaries/ffbinaries-prebuilt) (~100MB)
-
-**Supported platforms:**
-- Windows 10+ (64-bit)
-- macOS (Intel & Apple Silicon)
-- Linux (x86-64)
 
 ## License
 
