@@ -40,6 +40,9 @@ FFmpeg is required for video conversion and is **automatically downloaded on fir
 1. Application detects missing FFmpeg on first video conversion
 2. Automatically downloads from [FFbinaries GitHub](https://github.com/ffbinaries/ffbinaries-prebuilt) (~100MB)
 
+## Artificial Intelligence Notice
+AI was used for locating & fixing bugs along side organizing certain parts of the code.
+
 ## License
 
 MIT License - See LICENSE file for details
